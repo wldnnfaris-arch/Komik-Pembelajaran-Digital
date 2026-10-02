@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Komik Pembelajaran Digital</title>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --secondary: #10B981;
+            --secondary-hover: #059669;
+            --bg-color: #F3F4F6;
+            --text-color: #1F2937;
+            --card-bg: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--card-bg);
+            min-height: 100vh;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        h1, h2, h3 {
+            text-align: center;
+            color: var(--primary);
+        }
+
+        .view {
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.5s;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button.btn-success {
+            background-color: var(--secondary);
+            margin-top: 1rem;
+        }
+
+        button.btn-success:hover {
+            background-color: var(--secondary-hover);
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        @media(min-width: 600px) {
+            .menu-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .card {
+            border: 2px solid #E5E7EB;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        .pdf-container {
+            width: 100%;
+            height: 60vh;
+            border: 1px solid #D1D5DB;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .question-block {
+            margin-bottom: 1.5rem;
+            background-color: #F9FAFB;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid #E5E7EB;
+        }
+
+        .question-block p {
+            font-weight: bold;
+            margin-top: 0;
+        }
+
+        .options label {
+            display: block;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+        }
+
+        .options label:hover {
+            background-color: #E5E7EB;
+        }
+
+        .score-box {
+            background-color: #EFF6FF;
+            border: 2px solid var(--primary);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .score-box h1 {
+            font-size: 4rem;
+            margin: 1rem 0;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 1. HALAMAN LOGIN -->
+        <div id="view-login" class="view active">
+            <h1>Portal Komik Pembelajaran</h1>
+            <p style="text-align: center; color: #6B7280; margin-bottom: 2rem;">Silakan isi nama dan kelas sebelum mulai membaca.</p>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="nama">Nama Lengkap Siswa</label>
+                    <input type="text" id="nama" required placeholder="Contoh: Budi Santoso">
+                </div>
+                <div class="form-group">
+                    <label for="kelas">Kelas</label>
+                    <input type="text" id="kelas" required placeholder="Contoh: 7A">
+                </div>
+                <button type="submit">Masuk ke Portal</button>
+            </form>
+            <br>
+            <button onclick="downloadRekap()" style="background-color: #6B7280; font-size: 0.8rem;">Unduh Rekap Nilai (Khusus Guru)</button>
+        </div>
+
+        <!-- 2. HALAMAN MENU -->
+        <div id="view-menu" class="view">
+            <h2>Halo, <span id="display-nama"></span>!</h2>
+            <p style="text-align: center;">Pilih komik yang ingin kamu baca hari ini:</p>
+            
+            <div class="menu-grid">
+                <div class="card" onclick="pilihKomik('komik1')">
+                    <h3>📚 Komik 1</h3>
+                    <p>Hifz al-‘Aql (Menjaga Akal)</p>
+                    <button class="btn-success">Mulai Baca</button>
+                </div>
+                <div class="card" onclick="pilihKomik('komik2')">
+                    <h3>📚 Komik 2</h3>
+                    <p>Saksi Rahasia: Rakib & Atid</p>
+                    <button class="btn-success">Mulai Baca</button>
+                </div>
+            </div>
+            <button onclick="logout()" style="margin-top: 2rem; background-color: #EF4444;">Keluar</button>
+        </div>
+
+       <!-- 3. HALAMAN BACA KOMIK -->
+        <div id="view-reading" class="view">
+            <h2 id="judul-komik">Membaca Komik</h2>
+            <p>Silakan baca komik di bawah ini sampai habis. Jika file tidak muncul (khusus pengguna HP), silakan klik tombol biru di bawah ini.</p>
+            
+            <!-- Tombol khusus pengguna HP -->
+            <a id="btn-buka-pdf" href="#" target="_blank" style="display: block; text-align: center; background-color: #3B82F6; color: white; padding: 10px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-bottom: 15px;">Buka Komik Layar Penuh (Khusus HP)</a>
+
+            <!-- Tempat PDF ditampilkan (Untuk Laptop/PC) -->
+            <iframe id="pdf-viewer" class="pdf-container" src=""></iframe>
+            
+            <button id="btn-selesai-baca" class="btn-success" onclick="tampilkanKuis()">SAYA TELAH SELESAI MEMBACA & MULAI KUIS</button>
+        </div>
+
+        <!-- 4. HALAMAN KUIS -->
+        <div id="view-quiz" class="view">
+            <h2>Kuis Pemahaman</h2>
+            <p>Jawablah 10 pertanyaan di bawah ini dengan tepat berdasarkan komik yang telah kamu baca!</p>
+            
+            <form id="quiz-form">
+                <div id="quiz-container"></div>
+                <button type="submit" class="btn-success" style="font-size: 1.2rem; padding: 1rem;">Kirim Jawaban & Lihat Nilai</button>
+            </form>
+        </div>
+
+        <!-- 5. HALAMAN SKOR -->
+        <div id="view-result" class="view">
+            <h2>Hasil Kuis</h2>
+            
+            <div class="score-box">
+                <p>Total Nilai Kamu:</p>
+                <h1 id="skor-akhir">0</h1>
+                <p><strong>Nama:</strong> <span id="res-nama"></span></p>
+                <p><strong>Kelas:</strong> <span id="res-kelas"></span></p>
+                <p><strong>Komik:</strong> <span id="res-komik"></span></p>
+            </div>
+            
+            <button onclick="kembaliKeMenu()">Kembali ke Menu Utama</button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Data Sistem
+        let userData = { nama: "", kelas: "" };
+        let currentComic = "";
+        
+        // Data Soal
+        const dataSoal = {
+            komik1: [
+                {
+                    tanya: "1. Apa yang dimaksud dengan Hifz al-‘Aql?",
+                    opsi: { A: "Menjaga kesehatan tubuh", B: "Menjaga harta benda", C: "Menjaga akal dan pikiran dari hal-hal yang dapat merusaknya", D: "Menjaga hubungan dengan teman" },
+                    kunci: "C"
+                },
+                {
+                    tanya: "2. Mengapa Alya melakukan kesalahan ketika menyebarkan berita tentang Pak Idris?",
+                    opsi: { A: "Karena Alya tidak menyukai Pak Idris", B: "Karena Alya menyebarkan berita tanpa mengetahui kebenarannya", C: "Karena Alya mendapatkan berita langsung dari Pak Idris", D: "Karena Alya diperintah oleh Bu Rahma" },
+                    kunci: "B"
+                },
+                {
+                    tanya: "3. Apa yang seharusnya dilakukan sebelum membagikan informasi dari media sosial?",
+                    opsi: { A: "Langsung membagikannya agar menjadi yang pertama", B: "Melihat berapa banyak orang yang sudah membagikannya", C: "Memastikan sumber dan kebenaran informasi terlebih dahulu", D: "Membagikannya jika informasinya terlihat menarik" },
+                    kunci: "C"
+                },
+                {
+                    tanya: "4. Raka mengatakan, “Yang banyak belum tentu benar.” Apa maksud perkataan tersebut?",
+                    opsi: { A: "Informasi yang sedikit selalu benar", B: "Informasi yang banyak dibagikan belum tentu benar", C: "Semua informasi di media sosial adalah salah", D: "Kita tidak boleh menggunakan media sosial" },
+                    kunci: "B"
+                },
+                {
+                    tanya: "5. Apa akibat dari berita hoaks tentang Pak Idris dalam komik?",
+                    opsi: { A: "Pak Idris mendapatkan penghargaan", B: "Para siswa semakin mempercayai Pak Idris", C: "Pak Idris menjadi bahan cemoohan dan merasa sedih serta kecewa", D: "Alya mendapatkan pujian dari teman-temannya" },
+                    kunci: "C"
+                },
+                {
+                    tanya: "6. Apa nasihat Pak Idris kepada para siswa terkait penggunaan akal?",
+                    opsi: { A: "Gunakan akal untuk meniru apa yang dilakukan orang lain", B: "Gunakan akal untuk menimbang dan jangan hanya mengikuti orang lain", C: "Jangan menggunakan akal ketika menerima informasi", D: "Percayalah pada informasi yang sedang viral" },
+                    kunci: "B"
+                },
+                {
+                    tanya: "7. Bagaimana Alya mengetahui bahwa berita tentang Pak Idris ternyata tidak benar?",
+                    opsi: { A: "Mendengar dari teman-temannya", B: "Melihat komentar di media sosial", C: "Memeriksa catatan keuangan OSIS yang menunjukkan tidak ada penyelewengan", D: "Mendapatkan pesan dari akun anonim" },
+                    kunci: "C"
+                },
+                {
+                    tanya: "8. Setelah mengetahui bahwa berita tersebut adalah hoaks, apa yang dilakukan Alya?",
+                    opsi: { A: "Membiarkannya karena berita sudah terlanjur menyebar", B: "Menghapus semua media sosialnya", C: "Membuat video klarifikasi dan meminta maaf kepada Pak Idris", D: "Menyalahkan teman-temannya" },
+                    kunci: "C"
+                },
+                {
+                    tanya: "9. Perilaku manakah yang paling sesuai dengan penerapan Hifz al-‘Aql di media sosial?",
+                    opsi: { A: "Membagikan berita yang sedang viral tanpa memeriksa sumbernya", B: "Mempercayai informasi karena banyak orang yang membagikannya", C: "Memeriksa kebenaran informasi sebelum mempercayai dan menyebarkannya", D: "Menyebarkan rumor agar mendapatkan banyak perhatian" },
+                    kunci: "C"
+                },
+                {
+                    tanya: "10. Apa pesan utama komik tersebut mengenai Hifz al-‘Aql di era digital?",
+                    opsi: { A: "Kita harus menghindari semua penggunaan media sosial", B: "Kita boleh mempercayai informasi selama banyak orang yang membagikannya", C: "Kita harus berpikir sebelum percaya, mencari ilmu sebelum berbicara, dan menggunakan logika sebelum menilai", D: "Kita harus selalu mengikuti informasi yang sedang viral" },
+                    kunci: "C"
+                }
+            ],
+            komik2: [
+                {
+                    tanya: "1. Apa tugas Malaikat Rakib dan Atid dalam komik?",
+                    opsi: { A: "Menyampaikan wahyu kepada para nabi", B: "Mencatat amal baik dan buruk manusia", C: "Menjaga manusia dari segala bahaya", D: "Menyampaikan rezeki kepada manusia" },
+                    kunci: "B"
+                },
+                {
+                    tanya: "2. Apa yang sedang dihadapi Faiz dan Aira dalam cerita?",
+                    opsi: { A: "Perlombaan olahraga", B: "Ujian Tengah Semester", C: "Lomba membaca Al-Qur'an", D: "Ujian praktik" },
+                    kunci: "B"
+                },
+                {
+                    tanya: "3. Mengapa Faiz tergoda untuk menyontek saat ujian?",
+                    opsi: { A: "Ia ingin membantu Aira", B: "Ia sudah selesai mengerjakan semua soal", C: "Ia merasa kesulitan mengerjakan soal dan khawatir nilainya rendah", D: "Ia diperintahkan oleh Pak Wira" },
+                    kunci: "C"
+                },
+                {
+                    tanya: "4. Apa yang mengingatkan Faiz agar tidak menyontek?",
+                    opsi: { A: "Teguran dari kepala sekolah", B: "Ingatan terhadap nasihat Aira tentang malaikat yang mengawasi dan mencatat amal", C: "Bel sekolah", D: "Jawaban dari teman di belakangnya" },
+                    kunci: "B"
+                },
+                {
+                    tanya: "5. Menurut pelajaran yang disampaikan Pak Wira, apa yang dilakukan Malaikat Rakib dan Atid?",
+                    opsi: { A: "Rakib mencatat amal buruk dan Atid mencatat amal baik", B: "Rakib dan Atid hanya mencatat perbuatan yang dilakukan di sekolah", C: "Rakib mencatat amal baik dan Atid mencatat amal buruk", D: "Rakib dan Atid hanya mencatat dosa manusia" },
+                    kunci: "C"
+                },
+                {
+                    tanya: "6. Apa yang dilakukan Faiz ketika akhirnya memilih untuk tidak menyontek?",
+                    opsi: { A: "Menyerahkan kertas ujiannya", B: "Menjawab soal semampunya dengan jujur", C: "Meminta jawaban kepada Pak Wira", D: "Menyalin jawaban Aira secara diam-diam" },
+                    kunci: "B"
+                },
+                {
+                    tanya: "7. Apa pelajaran yang dapat diambil dari keputusan Faiz untuk tidak menyontek?",
+                    opsi: { A: "Nilai ujian tidak pernah penting", B: "Kejujuran lebih penting daripada mendapatkan nilai dengan cara curang", C: "Menyontek diperbolehkan jika soal terlalu sulit", D: "Siswa tidak perlu belajar sebelum ujian" },
+                    kunci: "B"
+                },
+                {
+                    tanya: "8. Berdasarkan komik, apa yang terjadi jika seseorang memiliki niat buruk tetapi kemudian menahannya karena takut kepada Allah?",
+                    opsi: { A: "Tetap selalu dicatat sebagai dosa", B: "Tidak ada hubungannya dengan amal", C: "Dalam penjelasan komik, menahan niat buruk karena takut kepada Allah dicatat sebagai kebaikan", D: "Dicatat sebagai kesalahan kecil" },
+                    kunci: "C"
+                },
+                {
+                    tanya: "9. Apa hubungan iman kepada Malaikat Rakib dan Atid dengan perilaku sehari-hari?",
+                    opsi: { A: "Membuat seseorang merasa bebas melakukan apa saja", B: "Mendorong seseorang untuk jujur, bertanggung jawab, dan berhati-hati dalam bertindak", C: "Membuat seseorang hanya berbuat baik ketika dilihat orang lain", D: "Membuat seseorang takut berinteraksi dengan orang lain" },
+                    kunci: "B"
+                },
+                {
+                    tanya: "10. Apa pesan utama yang ingin disampaikan komik “Saksi Rahasia: Ketika Pena Rakib dan Atid Bicara”?",
+                    opsi: { A: "Mendapatkan nilai tinggi adalah tujuan utama dalam ujian", B: "Kesalahan harus disembunyikan agar tidak diketahui orang lain", C: "Iman kepada Rakib dan Atid mendorong manusia untuk jujur, mawas diri, dan memperbaiki diri ketika melakukan kesalahan", D: "Manusia hanya perlu berbuat baik ketika sedang diawasi orang lain" },
+                    kunci: "C"
+                }
+            ]
+        };
+
+        // Fungsi Navigasi View
+        function showView(viewId) {
+            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        // Handle Login
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            userData.nama = document.getElementById('nama').value;
+            userData.kelas = document.getElementById('kelas').value;
+            
+            document.getElementById('display-nama').textContent = userData.nama;
+            showView('view-menu');
+        });
+
+        // Handle Logout
+        function logout() {
+            document.getElementById('login-form').reset();
+            showView('view-login');
+        }
+
+        // Handle Pilih Komik
+        function pilihKomik(idKomik) {
+            currentComic = idKomik;
+            let judul = idKomik === 'komik1' ? "Komik Pembelajaran 1: Hifz al-‘Aql" : "Komik Pembelajaran 2: Saksi Rahasia";
+            document.getElementById('judul-komik').textContent = judul;
+            
+            // Set sumber PDF untuk iframe (Laptop) dan tombol (HP)
+            document.getElementById('pdf-viewer').src = idKomik + ".pdf";
+            document.getElementById('btn-buka-pdf').href = idKomik + ".pdf";
+            
+            showView('view-reading');
+        }
+
+        // Tampilkan Kuis setelah membaca
+        function tampilkanKuis() {
+            let soal = dataSoal[currentComic];
+            let htmlKuis = "";
+            
+            soal.forEach((item, index) => {
+                htmlKuis += `
+                    <div class="question-block">
+                        <p>${item.tanya}</p>
+                        <div class="options">
+                            <label><input type="radio" name="q${index}" value="A" required> A. ${item.opsi.A}</label>
+                            <label><input type="radio" name="q${index}" value="B"> B. ${item.opsi.B}</label>
+                            <label><input type="radio" name="q${index}" value="C"> C. ${item.opsi.C}</label>
+                            <label><input type="radio" name="q${index}" value="D"> D. ${item.opsi.D}</label>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('quiz-container').innerHTML = htmlKuis;
+            showView('view-quiz');
+        }
+
+        // Handle Submit Kuis & Hitung Skor
+        document.getElementById('quiz-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            let skor = 0;
+            let soal = dataSoal[currentComic];
+            let form = e.target;
+            
+            soal.forEach((item, index) => {
+                let jawabanUser = form.elements[`q${index}`].value;
+                if(jawabanUser === item.kunci) {
+                    skor += 10; // Setiap soal benar bernilai 10 (Total max 100)
+                }
+            });
+            
+            // Tampilkan hasil
+            document.getElementById('skor-akhir').textContent = skor;
+            document.getElementById('res-nama').textContent = userData.nama;
+            document.getElementById('res-kelas').textContent = userData.kelas;
+            document.getElementById('res-komik').textContent = currentComic === 'komik1' ? "Komik 1 (Hifz al-‘Aql)" : "Komik 2 (Saksi Rahasia)";
+            
+            // Simpan ke Rekap (LocalStorage)
+            simpanKeRekap(userData.nama, userData.kelas, currentComic, skor);
+            
+            showView('view-result');
+        });
+
+        function kembaliKeMenu() {
+            showView('view-menu');
+        }
+
+        // Fitur Simpan & Export Nilai
+        function simpanKeRekap(nama, kelas, komikId, skor) {
+            let rekap = JSON.parse(localStorage.getItem('rekapNilaiKomik') || '[]');
+            let tanggal = new Date().toLocaleString('id-ID');
+            let namaKomik = komikId === 'komik1' ? "Komik 1" : "Komik 2";
+            
+            rekap.push({tanggal, nama, kelas, komik: namaKomik, skor});
+            localStorage.setItem('rekapNilaiKomik', JSON.stringify(rekap));
+        }
+
+        function downloadRekap() {
+            let rekap = JSON.parse(localStorage.getItem('rekapNilaiKomik') || '[]');
+            if(rekap.length === 0) {
+                alert("Belum ada data nilai yang tersimpan!");
+                return;
+            }
+            
+            // Buat CSV
+            let csvContent = "data:text/csv;charset=utf-8,Tanggal,Nama,Kelas,Komik,Skor\n";
+            rekap.forEach(row => {
+                let baris = `"${row.tanggal}","${row.nama}","${row.kelas}","${row.komik}","${row.skor}"`;
+                csvContent += baris + "\n";
+            });
+            
+            let encodedUri = encodeURI(csvContent);
+            let link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "Rekap_Nilai_Komik_Pembelajaran.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
